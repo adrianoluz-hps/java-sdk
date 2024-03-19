@@ -18,6 +18,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.junit.Assert.*;
 
@@ -45,6 +47,29 @@ public class UpaCreditTests {
     @Test
     public void creditSaleSwipe() throws ApiException
     {
+        TerminalResponse response = device.creditSale(new BigDecimal("18.01"))
+            .withGratuity(new BigDecimal("0.00"))
+            .execute();
+
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
+    }
+
+    @Test
+    public void creditSaleCancel() throws ApiException
+    {
+        TimerTask task = new TimerTask() {
+            public void run() {
+                try {
+                  device.cancel();
+                } catch (ApiException e) {
+                  e.printStackTrace();
+                }
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(task, 10000L);
+
         TerminalResponse response = device.creditSale(new BigDecimal("18.01"))
             .withGratuity(new BigDecimal("0.00"))
             .execute();
